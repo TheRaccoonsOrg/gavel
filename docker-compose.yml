@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:11-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment: 
+      POSTGRES_DB: gavel
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    env_file: .env
+    restart: on-failure
+    networks: 
+      - gavel_network
+  
+  redis:
+    image: redis:7.4-alpine
+    restart: on-failure
+    networks: 
+      - gavel_network
+
+  gavel:
+    env_file: .env
+    build: .
+    restart: on-failure
+    networks: 
+      - gavel_network
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+    command: bash -c "python initialize.py && /usr/local/bin/gunicorn gavel:app"
+
+  worker:
+    env_file: .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    user: nobody
+    restart: on-failure
+    environment:
+      - REDIS_URL=redis://redis/0
+    depends_on:
+      - gavel
+      - redis
+    networks: 
+      - gavel_network
+    command: celery -A gavel:celery worker
+
+volumes:
+  postgres_data:
+
+networks:
+  gavel_network:
+    driver: bridge

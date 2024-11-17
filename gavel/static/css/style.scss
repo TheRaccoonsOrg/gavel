@@ -354,3 +354,43 @@ input[type=submit].neutral {
     text-align: center;
   }
 }
+
+
+.info-container {
+  display: flex;
+  margin: 0px 10px;
+  padding: 20px 0px;
+  flex-wrap: wrap;
+}
+
+.info-container-flexbox {
+  display: flex;
+  place-content: center;
+  margin: auto;
+  width: 100%;
+}
+
+.info-container-image {
+  max-width: 300px;
+  max-height: 200px;
+  min-width: 100px
+}
+
+.info-container-meta {
+  margin: 20px 0px 0px 20px;
+  flex-grow: 1;
+}
+
+.info-container-meta > a {
+  text-decoration: underline;
+}
+
+@media (min-width: 640px) {
+  .info-container {
+    flex-wrap: nowrap;
+  }
+
+  .info-container-flexbox {
+    width: auto;
+  }
+}

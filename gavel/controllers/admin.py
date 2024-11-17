@@ -59,7 +59,7 @@ def item():
         if data:
             # validate data
             for index, row in enumerate(data):
-                if len(row) != 3:
+                if len(row) < 3 or len(row) > 4:
                     return utils.user_error('Bad data: row %d has %d elements (expecting 3)' % (index + 1, len(row)))
             def tx():
                 for row in data:
@@ -110,7 +110,7 @@ def parse_upload_form():
         if extension == "xlsx" or extension == "xls":
             workbook = xlrd.open_workbook(file_contents=f.read())
             worksheet = workbook.sheet_by_index(0)
-            data = list(utils.cast_row(worksheet.row_values(rx, 0, 3)) for rx in range(worksheet.nrows) if worksheet.row_len(rx) == 3)
+            data = list(utils.cast_row(worksheet.row_values(rx, 0, 4)) for rx in range(worksheet.nrows) if 3 <= worksheet.row_len(rx) < 5)
         elif extension == "csv":
             data = utils.data_from_csv_string(f.read().decode("utf-8"))
     else:
@@ -132,9 +132,11 @@ def item_patch():
             item.name = request.form['name']
         if 'description' in request.form:
             item.description = request.form['description']
+        if 'image' in request.form:
+            item.image = request.form['image']
         db.session.commit()
     with_retries(tx)
-    return redirect(url_for('item_detail', item_id=item.id))
+    return redirect(url_for('item_detail', item_id=request.form['item_id']))
 
 @app.route('/admin/annotator', methods=['POST'])
 @utils.requires_auth
